@@ -8,6 +8,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -57,8 +58,10 @@ public class SupremeBot {
 	    WebDriverWait wait = new WebDriverWait(driver, 10);
 	    WebElement element = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//span[contains(.,'Next')]")));
 	    element.click();
+	    
 
 	}
+	
 
 	/**
 	 * Uses the WebDriver to navigate to the Supreme web site and use inputed fields to get to checkout with desired item
@@ -67,22 +70,19 @@ public class SupremeBot {
 	public static void checkoutSupremeItem(WebDriver driver) {
 
 		//fields needed for finding objects
-		String category = dataList.get(14);
-		String keyword = dataList.get(15);
+		String category = dataList.get(11);
+		String keyword = dataList.get(12);
 
 		//form fields
 		String name = dataList.get(2);
 		String email = dataList.get(3);
 		String telNumber = dataList.get(4);
 		String address = dataList.get(5); 
-//	        String aptUnit = dataList.get(6);
-		String zip = dataList.get(7);
-//	        String city = dataList.get(8);
-//	        String state = dataList.get(9);
-		String credit = dataList.get(10);
-		String creditMonth = dataList.get(11);
-		String creditYear = dataList.get(12);
-		String cvv = dataList.get(13);
+		String zip = dataList.get(6);
+		String credit = dataList.get(7);
+		String creditMonth = dataList.get(8);
+		String creditYear = dataList.get(9);
+		String cvv = dataList.get(10);
 
 		// launch Chrome and direct it to the Base URL
 		String baseUrl = "https://www.supremenewyork.com/shop/all";
@@ -180,12 +180,17 @@ public class SupremeBot {
 
 	public static void main(String[] args) {
 
+
 		String rootProjectPath = System.getProperty("user.dir");
-		System.setProperty("webdriver.chrome.driver", rootProjectPath + "\\chromedriver.exe");
+		System.setProperty("webdriver.chrome.driver", rootProjectPath + "\\drivers\\chromedriver.exe");
+		
+		//ChromeOptions options = new ChromeOptions();
+		//options.addArguments("user-data-dir = C:\\Users\\Brendan\\AppData\\Local\\Google\\Chrome\\User Data\\Default");
+		//WebDriver driver = new ChromeDriver(options);
 		WebDriver driver = new ChromeDriver();
 		
 		importDataFromFile();
-		//loginToGoogle(driver);
+		//loginToChrome();
 		checkoutSupremeItem(driver);
 
 	}
