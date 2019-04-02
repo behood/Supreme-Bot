@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
@@ -14,7 +15,7 @@ import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 public class SupremeBot {
 
-	private static ArrayList<String> dataList = new ArrayList<String>();
+	private static ArrayList<String> dataList = new ArrayList<String>(); //holds values for user data
 
 	/**
 	 * Imports the data fields into a list from the data file
@@ -22,13 +23,13 @@ public class SupremeBot {
 	 */
 	public static void importDataFromFile() {
 
-		File data = new File("data.txt");
+		File data = new File("data.txt"); //file in main library containing data to be used by bot, edited by gui class
 
 		try{
 			Scanner dataScanner = new Scanner(data);
 
 			while(dataScanner.hasNextLine()) {
-				dataList.add(dataScanner.nextLine());
+				dataList.add(dataScanner.nextLine()); //writes from file to user data
 			}
 
 			dataScanner.close();
@@ -40,7 +41,7 @@ public class SupremeBot {
 
 	/**
 	 * Logs in to google in order to pass Captcha
-	 * to do- make work
+	 * TO DO- Implementation not practically complete
 	 */
 	public static void loginToGoogle(WebDriver driver) {
 		
@@ -72,17 +73,7 @@ public class SupremeBot {
 		//fields needed for finding objects
 		String category = dataList.get(11);
 		String keyword = dataList.get(12);
-
-		//form fields
-		String name = dataList.get(2);
-		String email = dataList.get(3);
-		String telNumber = dataList.get(4);
-		String address = dataList.get(5); 
-		String zip = dataList.get(6);
-		String credit = dataList.get(7);
-		String creditMonth = dataList.get(8);
-		String creditYear = dataList.get(9);
-		String cvv = dataList.get(10);
+		String color = dataList.get(13);
 
 		// launch Chrome and direct it to the Base URL
 		String baseUrl = "https://www.supremenewyork.com/shop/all";
@@ -119,15 +110,72 @@ public class SupremeBot {
 			driver.get(baseUrl + "/accessories");
 		}
 
-		driver.findElement(By.partialLinkText(keyword)).click();
-
+		int currentVersion = 0;
+		String baseLink = driver.getCurrentUrl();
+		List<WebElement> colorVariants = driver.findElements(By.partialLinkText(keyword));
+		
+		if(!colorVariants.isEmpty()) colorVariants.get(0).click();
+		
 		String currentLink = driver.getCurrentUrl();
 		driver.get(currentLink);
-
-		WebElement AddToCart = driver.findElement(By.name("commit"));
-		AddToCart.click();
-
-		//to do: fix it not going to checkout 100% of the time
+		
+		WebElement currentVariant = driver.findElement(By.xpath("//*[@id=\"details\"]/p[1]"));
+		//WebElement currentVariant = driver.findElement(By.className("style.protect"));
+		String currentColor = currentVariant.getText();		
+		
+		if(currentColor.equalsIgnoreCase(color)) {
+			
+			WebElement AddToCart = driver.findElement(By.name("commit"));
+			AddToCart.click();
+			checkout(driver);
+		} 
+		else {
+			
+			while(!currentColor.equalsIgnoreCase(color)) {
+				 
+				currentVersion++;
+				System.out.println("m" + currentVersion);
+				driver.get(baseLink);			
+				if(colorVariants.size() >= currentVersion + 1) {
+					
+					System.out.println("n" + currentVersion);
+					colorVariants = driver.findElements(By.partialLinkText(keyword));
+					colorVariants.get(currentVersion).click();
+					
+					currentVariant = driver.findElement(By.xpath("//*[@id=\"details\"]/p[1]"));
+					currentColor = currentVariant.getText();
+					
+					if(currentColor.equalsIgnoreCase(color)) {
+						
+						
+						WebElement AddToCart = driver.findElement(By.name("commit"));
+						AddToCart.click();
+						checkout(driver);
+					} 
+				}
+				else {
+					
+					currentColor = color;
+					System.out.println("Could not find desired color.");
+				}
+			}
+		}
+		
+	}
+	
+	public static void checkout(WebDriver driver) {
+		
+		//form fields
+		String name = dataList.get(2);
+		String email = dataList.get(3);
+		String telNumber = dataList.get(4);
+		String address = dataList.get(5); 
+		String zip = dataList.get(6);
+		String credit = dataList.get(7);
+		String creditMonth = dataList.get(8);
+		String creditYear = dataList.get(9);
+		String cvv = dataList.get(10);
+		
 		driver.get("https://www.supremenewyork.com/checkout");
 		driver.get("https://www.supremenewyork.com/checkout");
 
@@ -166,16 +214,18 @@ public class SupremeBot {
 		creditMonthDropdown.selectByVisibleText(creditMonth); 
 
 		Select creditYearDropdown = new Select(driver.findElement(By.xpath("//*[@id=\"credit_card_year\"]")));
-		creditYearDropdown.selectByVisibleText(creditYear);
+		creditYearDropdown.selectByVisibleText("20" + creditYear);
 
 		//clicks the check box
 		WebElement checkBox = driver.findElement(By.xpath("//*[@id=\"cart-cc\"]/fieldset/p[2]/label/div"));
 		checkBox.click();
 
+		
 		//final checkout button
 		driver.findElement(By.name("commit")).click();
 
 		//		driver.quit();
+
 	}
 
 	public static void main(String[] args) {
